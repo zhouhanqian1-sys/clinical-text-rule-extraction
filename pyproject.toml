@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clinical-text-rule-extraction"
+version = "0.1.0"
+description = "Rule-based extraction of structured symptom information from short clinical text."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+keywords = ["clinical-nlp", "rule-based", "medical-text", "information-extraction"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Medical Science Apps.",
+  "Topic :: Text Processing :: Linguistic",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+clinical-text-parser = "clinical_text_parser.cli.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["clinical_text_parser*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
