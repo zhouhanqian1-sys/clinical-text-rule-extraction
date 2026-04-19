@@ -22,6 +22,70 @@ This repository is designed as a course-friendly software engineering project:
 - emit consistent JSON output
 - provide both Python and CLI interfaces
 
+## Software Architecture
+
+This project is designed as a small, reusable Python library with a thin command-line interface.
+
+The architecture separates the core business logic from the user interface:
+
+- the **library layer** performs rule-based clinical text parsing
+- the **CLI layer** only handles user input, file arguments, and output formatting
+
+This design makes the project easier to test, reuse, and extend.
+
+### Main Components
+
+- `clinical_text_parser.patterns`  
+  Contains symptom vocabularies, severity terms, duration expressions, body-location terms, and negation trigger patterns.
+
+- `clinical_text_parser.parser`  
+  Implements the core extraction pipeline. This module identifies symptom mentions and attaches related attributes such as severity, duration, body location, and negation status.
+
+- `clinical_text_parser.models`  
+  Defines the structured result objects returned by the parser, such as mention-level outputs and full parse results.
+
+- `clinical_text_parser.io`  
+  Handles input/output helpers, including reading text from files and writing structured JSON results.
+
+- `clinical_text_parser.cli`  
+  Provides the command-line entry point. This layer calls the library but does not implement parsing logic itself.
+
+### Data Flow
+
+1. Raw clinical text is provided through the Python API or CLI.
+2. The text is normalized for consistent matching.
+3. Rule-based patterns are used to identify symptom mentions.
+4. Additional rules attach severity, duration, body location, and negation information.
+5. The parser returns structured result objects.
+6. Results can be converted to dictionaries or JSON for downstream use.
+
+### Design Rationale
+
+This architecture was chosen to support:
+
+- **reusability**: the parser can be imported as a normal Python library
+- **testability**: core parsing logic can be tested independently from the CLI
+- **maintainability**: patterns, parser logic, data models, and interface code are kept separate
+- **extensibility**: new rules or output formats can be added without changing the overall structure
+
+## Project Structure
+
+```text
+clinical-text-rule-extraction/
+├── clinical_text_parser/
+│   ├── cli/          # command-line interface
+│   ├── io/           # input/output helpers and JSON serialization
+│   ├── models/       # structured result models
+│   ├── parser/       # core rule-based extraction logic
+│   └── patterns/     # symptom lexicons and matching rules
+├── tests/            # unit and integration tests
+├── pyproject.toml    # packaging and development configuration
+├── README.md         # project documentation
+└── AI_USAGE.md       # generative AI usage documentation
+```
+
+This structure keeps the parsing logic independent from the CLI and separates rules, models, and I/O utilities into modular components that are easier to test and extend.
+
 ## Example
 
 Input:
@@ -65,21 +129,6 @@ Output:
 }
 ```
 
-## Project Structure
-
-```text
-clinical-text-rule-extraction/
-├── clinical_text_parser/
-│   ├── cli/
-│   ├── io/
-│   ├── models/
-│   ├── parser/
-│   └── patterns/
-├── tests/
-├── pyproject.toml
-└── README.md
-```
-
 ## Installation
 
 ```bash
@@ -117,18 +166,45 @@ Parse a text file with one input per line:
 clinical-text-parser --input-file sample_notes.txt --output-file results.json
 ```
 
+## Development
+
+Install development dependencies:
+
+```bash
+pip install -e ".[dev]"
+```
+
+Run linting:
+
+```bash
+ruff check .
+ruff format --check .
+```
+
+Run tests:
+
+```bash
+pytest
+```
+
 ## Testing
 
 ```bash
 python -m pytest
 ```
 
-## Current Scope
+## Current Scope and Limitations
 
-This is intentionally a lightweight rule-based baseline. It works best on short symptom-focused text snippets and can be extended with:
+This project is intentionally a lightweight rule-based baseline for short symptom-focused clinical text. It does not aim to fully parse long clinical notes or resolve all complex linguistic structure.
+
+It works best on short symptom-focused text snippets and can be extended with:
 
 - richer symptom lexicons
 - more robust scope handling for negation
 - section-aware parsing
 - better attachment rules for modifiers in multi-symptom sentences
 - optional FHIR-style schema output
+
+## Generative AI Usage
+
+Generative AI usage for this project is documented in `AI_USAGE.md`.
