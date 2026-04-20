@@ -73,15 +73,22 @@ This architecture was chosen to support:
 ```text
 clinical-text-rule-extraction/
 ├── clinical_text_parser/
-│   ├── cli/          # command-line interface
-│   ├── io/           # input/output helpers and JSON serialization
-│   ├── models/       # structured result models
-│   ├── parser/       # core rule-based extraction logic
-│   └── patterns/     # symptom lexicons and matching rules
-├── tests/            # unit and integration tests
-├── pyproject.toml    # packaging and development configuration
-├── README.md         # project documentation
-└── AI_USAGE.md       # generative AI usage documentation
+│   ├── __init__.py
+│   ├── cli/
+│   │   └── __init__.py
+│   ├── io/
+│   │   └── __init__.py
+│   ├── models/
+│   │   └── __init__.py
+│   ├── parser/
+│   │   └── __init__.py
+│   └── patterns/
+│       └── __init__.py
+├── tests/
+│   └── __init__.py
+├── pyproject.toml
+├── README.md
+└── AI_USAGE.md
 ```
 
 This structure keeps the parsing logic independent from the CLI and separates rules, models, and I/O utilities into modular components that are easier to test and extend.
