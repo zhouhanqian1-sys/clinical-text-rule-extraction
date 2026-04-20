@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from clinical_text_parser import ClinicalTextParser, parse_clinical_text
+from clinical_text_parser.parser import ClinicalTextParser, parse_clinical_text
 
 
 def test_extracts_symptom_severity_duration_and_association() -> None:
