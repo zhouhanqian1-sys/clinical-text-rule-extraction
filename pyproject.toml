@@ -24,7 +24,10 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0"]
+dev = [
+  "pytest>=7.0",
+  "ruff>=0.6.0",
+]
 
 [project.scripts]
 clinical-text-parser = "clinical_text_parser.cli.main:main"
@@ -35,3 +38,10 @@ include = ["clinical_text_parser*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
