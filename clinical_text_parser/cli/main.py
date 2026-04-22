@@ -35,12 +35,15 @@ def main(argv: list[str] | None = None) -> int:
     if args.text is not None:
         payload = parser.parse(args.text).to_dict()
     else:
-        payload = [parser.parse(text).to_dict() for text in read_text_lines(args.input_file)]
+        payload = [
+            parser.parse(text).to_dict() for text in read_text_lines(args.input_file)
+        ]
 
     rendered = dump_json(payload, path=args.output_file)
     if args.output_file is None:
         print(rendered)
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

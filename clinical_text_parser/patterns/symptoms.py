@@ -16,14 +16,19 @@ SYMPTOM_PATTERNS: tuple[SymptomPattern, ...] = (
     SymptomPattern("chest pain", r"\bchest pain\b", "chest"),
     SymptomPattern(
         "shortness of breath",
-        r"\b(?:shortness of breath|shortness of breath|shortness[- ]of[- ]breath|sob|dyspnea)\b",
+        (
+            r"\b(?:shortness of breath|shortness[- ]of[- ]breath|"
+            r"sob|dyspnea)\b"
+        ),
     ),
     SymptomPattern("fever", r"\bfever\b"),
     SymptomPattern("cough", r"\bcough(?:ing)?\b"),
     SymptomPattern("headache", r"\b(?:headache|head ache)\b", "head"),
     SymptomPattern("nausea", r"\bnausea\b"),
     SymptomPattern("vomiting", r"\b(?:vomiting|emesis)\b"),
-    SymptomPattern("abdominal pain", r"\b(?:abdominal|abdomen|stomach) pain\b", "abdomen"),
+    SymptomPattern(
+        "abdominal pain", r"\b(?:abdominal|abdomen|stomach) pain\b", "abdomen"
+    ),
     SymptomPattern("back pain", r"\bback pain\b", "back"),
     SymptomPattern("dizziness", r"\b(?:dizziness|lightheadedness)\b"),
     SymptomPattern("fatigue", r"\b(?:fatigue|tiredness)\b"),

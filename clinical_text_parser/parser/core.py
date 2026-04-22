@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from dataclasses import dataclass
-import re
 
 from clinical_text_parser.models import ParsedClinicalText, SymptomMention
+from clinical_text_parser.parser.normalizer import normalize_text
 from clinical_text_parser.patterns import (
     BODY_LOCATION_PATTERNS,
     LEADING_DURATION_PATTERNS,
@@ -16,8 +17,6 @@ from clinical_text_parser.patterns import (
     TRAILING_DURATION_PATTERNS,
     normalize_duration,
 )
-from clinical_text_parser.parser.normalizer import normalize_text
-
 
 SEVERITY_REGEX = re.compile(
     r"\b(" + "|".join(re.escape(term) for term in SEVERITY_NORMALIZATION) + r")\b",
@@ -69,7 +68,9 @@ class ClinicalTextParser:
 
         mention_records: list[tuple[SymptomMention, int]] = []
         for match in matches:
-            sentence_index, sentence, sentence_start = _locate_sentence(match.start, sentences)
+            sentence_index, sentence, sentence_start = _locate_sentence(
+                match.start, sentences
+            )
             relative_start = match.start - sentence_start
             relative_end = match.end - sentence_start
 
@@ -91,7 +92,9 @@ class ClinicalTextParser:
 
         self._attach_associations(mention_records)
         mentions = [mention for mention, _ in mention_records]
-        return ParsedClinicalText(text=text, normalized_text=normalized, mentions=mentions)
+        return ParsedClinicalText(
+            text=text, normalized_text=normalized, mentions=mentions
+        )
 
     def _find_symptom_matches(self, text: str) -> list[_MatchedSymptom]:
         raw_matches: list[_MatchedSymptom] = []
@@ -176,7 +179,9 @@ class ClinicalTextParser:
             grouped_mentions[sentence_index].append(mention)
 
         for mentions in grouped_mentions.values():
-            unique_symptoms = list(dict.fromkeys(mention.symptom for mention in mentions))
+            unique_symptoms = list(
+                dict.fromkeys(mention.symptom for mention in mentions)
+            )
             if len(unique_symptoms) < 2:
                 continue
             for mention in mentions:
