@@ -10,9 +10,13 @@ def test_extracts_symptom_severity_duration_and_association() -> None:
         "Patient has had severe chest pain for 2 days with shortness of breath."
     )
 
-    chest_pain = next(mention for mention in result.mentions if mention.symptom == "chest pain")
+    chest_pain = next(
+        mention for mention in result.mentions if mention.symptom == "chest pain"
+    )
     shortness_of_breath = next(
-        mention for mention in result.mentions if mention.symptom == "shortness of breath"
+        mention
+        for mention in result.mentions
+        if mention.symptom == "shortness of breath"
     )
 
     assert chest_pain.severity == "severe"
@@ -43,9 +47,13 @@ def test_handles_case_and_spelling_variation() -> None:
     result = parse_clinical_text("SEVERE shortness-of-breath x 2 DAYS and head ache.")
 
     shortness_of_breath = next(
-        mention for mention in result.mentions if mention.symptom == "shortness of breath"
+        mention
+        for mention in result.mentions
+        if mention.symptom == "shortness of breath"
     )
-    headache = next(mention for mention in result.mentions if mention.symptom == "headache")
+    headache = next(
+        mention for mention in result.mentions if mention.symptom == "headache"
+    )
 
     assert shortness_of_breath.severity == "severe"
     assert shortness_of_breath.duration == "2 days"
@@ -65,3 +73,26 @@ def test_non_string_input_raises_type_error() -> None:
 
     with pytest.raises(TypeError):
         parser.parse(None)  # type: ignore[arg-type]
+
+
+def test_negation_with_contrast_scope() -> None:
+    result = parse_clinical_text("Patient denies fever but has cough.")
+    fever = next(mention for mention in result.mentions if mention.symptom == "fever")
+    cough = next(mention for mention in result.mentions if mention.symptom == "cough")
+
+    assert fever.negated is True
+    assert cough.negated is False
+
+
+def test_extracts_leading_duration_history_pattern() -> None:
+    result = parse_clinical_text("Patient has 1-week history of cough.")
+    cough = next(mention for mention in result.mentions if mention.symptom == "cough")
+
+    assert cough.duration == "1 week"
+
+
+def test_extracts_synonym_mentions() -> None:
+    result = parse_clinical_text("Dyspnea with emesis and lightheadedness.")
+    symptoms = [mention.symptom for mention in result.mentions]
+
+    assert symptoms == ["shortness of breath", "vomiting", "dizziness"]
