@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from dataclasses import dataclass
-import re
 
 from clinical_text_parser.models import ParsedClinicalText, SymptomMention
+from clinical_text_parser.parser.normalizer import normalize_text
 from clinical_text_parser.patterns import (
     BODY_LOCATION_PATTERNS,
     LEADING_DURATION_PATTERNS,
@@ -16,8 +17,6 @@ from clinical_text_parser.patterns import (
     TRAILING_DURATION_PATTERNS,
     normalize_duration,
 )
-from clinical_text_parser.parser.normalizer import normalize_text
-
 
 SEVERITY_REGEX = re.compile(
     r"\b(" + "|".join(re.escape(term) for term in SEVERITY_NORMALIZATION) + r")\b",

@@ -1,6 +1,6 @@
 # Clinical Text Rule Extraction
 
-A small Python library for extracting structured symptom information from short clinical text without using APIs or LLMs.
+A lightweight rule-based Python library for extracting structured symptom information from short clinical text.
 
 ## Why this project
 
@@ -72,26 +72,41 @@ This architecture was chosen to support:
 
 ```text
 clinical-text-rule-extraction/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 ├── clinical_text_parser/
 │   ├── __init__.py
 │   ├── cli/
-│   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   └── main.py
 │   ├── io/
-│   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   └── json_io.py
 │   ├── models/
-│   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   └── extraction.py
 │   ├── parser/
-│   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   ├── core.py
+│   │   └── normalizer.py
 │   └── patterns/
-│       └── __init__.py
+│       ├── __init__.py
+│       ├── body_locations.py
+│       ├── duration.py
+│       ├── negation.py
+│       ├── severity.py
+│       └── symptoms.py
 ├── tests/
-│   └── __init__.py
+│   ├── test_models.py
+│   └── test_parser.py
 ├── pyproject.toml
 ├── README.md
 └── AI_USAGE.md
 ```
 
-This structure keeps the parsing logic independent from the CLI and separates rules, models, and I/O utilities into modular components that are easier to test and extend.
+This structure keeps the parsing logic independent from the CLI and separates rules, models, parser logic, and I/O utilities into modular components that are easier to test and extend.
 
 ## Example
 
@@ -151,7 +166,7 @@ pip install -e ".[dev]"
 ## Python Usage
 
 ```python
-from clinical_text_parser import ClinicalTextParser
+from clinical_text_parser.parser import ClinicalTextParser
 
 parser = ClinicalTextParser()
 result = parser.parse("Patient denies fever but reports mild cough for 3 days.")
@@ -173,6 +188,12 @@ Parse a text file with one input per line:
 clinical-text-parser --input-file sample_notes.txt --output-file results.json
 ```
 
+You can also run the CLI as a module:
+
+```bash
+python -m clinical_text_parser.cli --text "Patient denies fever but reports cough."
+```
+
 ## Development
 
 Install development dependencies:
@@ -191,10 +212,16 @@ ruff format --check .
 Run tests:
 
 ```bash
-pytest
+python -m pytest
 ```
 
+## Continuous Integration
+
+GitHub Actions is configured to run linting and tests automatically on every push and pull request.
+
 ## Testing
+
+The test suite can be run locally with:
 
 ```bash
 python -m pytest
@@ -214,4 +241,4 @@ It works best on short symptom-focused text snippets and can be extended with:
 
 ## Generative AI Usage
 
-Generative AI usage for this project is documented in `AI_USAGE.md`.
+Generative AI usage for this project is documented in `AI_USAGE.md`, including the tools used, how they were used, and what they produced.
