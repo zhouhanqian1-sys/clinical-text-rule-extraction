@@ -8,3 +8,11 @@ NEGATION_CUES: tuple[str, ...] = (
     "negative for",
     "free of",
 )
+
+CONTRAST_CUES: tuple[str, ...] = (
+    "but",
+    "however",
+    "except",
+)
+
+NEGATION_LOOKBACK_CHARS = 45
