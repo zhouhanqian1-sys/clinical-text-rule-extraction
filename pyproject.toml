@@ -45,10 +45,7 @@ target-version = "py39"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
-<<<<<<< HEAD
-=======
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
->>>>>>> bfef609 (Issur 5-7)

@@ -53,9 +53,6 @@ def test_parsed_clinical_text_to_dict() -> None:
                 "evidence": "patient has chest pain",
             }
         ],
-<<<<<<< HEAD
-    }
-=======
     }
 
 def test_parsed_clinical_text_empty_mentions() -> None:
@@ -69,4 +66,3 @@ def test_parsed_clinical_text_empty_mentions() -> None:
         "normalized_text": "",
         "mentions": [],
     }
->>>>>>> bfef609 (Issur 5-7)

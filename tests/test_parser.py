@@ -96,8 +96,6 @@ def test_extracts_synonym_mentions() -> None:
     symptoms = [mention.symptom for mention in result.mentions]
 
     assert symptoms == ["shortness of breath", "vomiting", "dizziness"]
-<<<<<<< HEAD
-=======
 
 
 def test_detects_no_negation() -> None:
@@ -147,4 +145,3 @@ def test_detects_denied_negation() -> None:
     )
 
     assert headache.negated is True
->>>>>>> bfef609 (Issur 5-7)

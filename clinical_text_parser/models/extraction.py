@@ -46,8 +46,4 @@ class ParsedClinicalText:
             "text": self.text,
             "normalized_text": self.normalized_text,
             "mentions": [mention.to_dict() for mention in self.mentions],
-<<<<<<< HEAD
         }
-=======
-        }
->>>>>>> bfef609 (Issur 5-7)

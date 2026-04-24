@@ -8,8 +8,6 @@ NEGATION_CUES: tuple[str, ...] = (
     "negative for",
     "free of",
 )
-<<<<<<< HEAD
-=======
 
 CONTRAST_CUES: tuple[str, ...] = (
     "but",
@@ -18,4 +16,3 @@ CONTRAST_CUES: tuple[str, ...] = (
 )
 
 NEGATION_LOOKBACK_CHARS = 45
->>>>>>> bfef609 (Issur 5-7)

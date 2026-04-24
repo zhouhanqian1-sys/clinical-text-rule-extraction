@@ -10,13 +10,6 @@ from clinical_text_parser.parser import ClinicalTextParser
 
 
 def build_parser() -> argparse.ArgumentParser:
-<<<<<<< HEAD
-    parser = argparse.ArgumentParser(
-        description="Extract structured symptom information from short clinical text."
-    )
-    source_group = parser.add_mutually_exclusive_group(required=True)
-    source_group.add_argument("--text", help="Clinical text snippet to parse.")
-=======
     """Build the argument parser for the CLI."""
     parser = argparse.ArgumentParser(
         prog ="clinical-text-parser",
@@ -29,7 +22,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Clinical text snippet to parse.",
     )
     
->>>>>>> bfef609 (Issur 5-7)
     source_group.add_argument(
         "--input-file",
         type=Path,
@@ -44,18 +36,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-<<<<<<< HEAD
-    args = build_parser().parse_args(argv)
-    parser = ClinicalTextParser()
-
-=======
     """Run the command-line interface."""
     args = build_parser().parse_args(argv)
     parser = ClinicalTextParser()
 
     payload: dict[str, object] | list[dict[str, object]]
 
->>>>>>> bfef609 (Issur 5-7)
     if args.text is not None:
         payload = parser.parse(args.text).to_dict()
     else:
