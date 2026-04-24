@@ -7,6 +7,7 @@ from clinical_text_parser.patterns.duration import (
     normalize_duration,
 )
 from clinical_text_parser.patterns.negation import (
+    AFFIRMATIVE_CLAUSE_BOUNDARY_PATTERNS,
     CONTRAST_CUES,
     NEGATION_CUES,
     NEGATION_LOOKBACK_CHARS,
@@ -15,6 +16,7 @@ from clinical_text_parser.patterns.severity import SEVERITY_NORMALIZATION
 from clinical_text_parser.patterns.symptoms import SYMPTOM_PATTERNS, SymptomPattern
 
 __all__ = [
+    "AFFIRMATIVE_CLAUSE_BOUNDARY_PATTERNS",
     "BODY_LOCATION_PATTERNS",
     "LEADING_DURATION_PATTERNS",
     "NEGATION_CUES",

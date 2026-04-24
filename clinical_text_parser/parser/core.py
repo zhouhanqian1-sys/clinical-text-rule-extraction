@@ -5,10 +5,12 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 from dataclasses import dataclass
+from typing import Iterable
 
 from clinical_text_parser.models import ParsedClinicalText, SymptomMention
 from clinical_text_parser.parser.normalizer import normalize_text
 from clinical_text_parser.patterns import (
+    AFFIRMATIVE_CLAUSE_BOUNDARY_PATTERNS,
     BODY_LOCATION_PATTERNS,
     CONTRAST_CUES,
     LEADING_DURATION_PATTERNS,
@@ -20,9 +22,15 @@ from clinical_text_parser.patterns import (
     normalize_duration,
 )
 
-# Compile a regex to detect severity terms such as "mild"
-SEVERITY_REGEX = re.compile(
-    r"\b(" + "|".join(re.escape(term) for term in SEVERITY_NORMALIZATION) + r")\b",
+SEVERITY_PATTERN = "|".join(re.escape(term) for term in SEVERITY_NORMALIZATION)
+
+LEADING_SEVERITY_REGEX = re.compile(
+    r"(?:^|[\s,(])(?P<term>" + SEVERITY_PATTERN + r")\s+$",
+    flags=re.IGNORECASE,
+)
+
+TRAILING_SEVERITY_REGEX = re.compile(
+    r"^[\s,()]+(?P<term>" + SEVERITY_PATTERN + r")\b",
     flags=re.IGNORECASE,
 )
 
@@ -45,6 +53,20 @@ NEGATION_REGEX = re.compile(
 # Compile a regex to detect contrast words such as "but"
 CONTRAST_REGEX = re.compile(
     r"\b(" + "|".join(re.escape(cue) for cue in CONTRAST_CUES) + r")\b",
+    flags=re.IGNORECASE,
+)
+
+AFFIRMATIVE_CLAUSE_BOUNDARY_REGEX = re.compile(
+    r"|".join(AFFIRMATIVE_CLAUSE_BOUNDARY_PATTERNS),
+    flags=re.IGNORECASE,
+)
+
+CLAUSE_BOUNDARY_REGEX = re.compile(
+    r"(?:"
+    + CONTRAST_REGEX.pattern
+    + r"|"
+    + AFFIRMATIVE_CLAUSE_BOUNDARY_REGEX.pattern
+    + r")",
     flags=re.IGNORECASE,
 )
 # Compile regex patterns for body location terms
@@ -80,23 +102,29 @@ class ClinicalTextParser:
         normalized = normalize_text(text)
         if not normalized:
             return ParsedClinicalText(text=text, normalized_text="", mentions=[])
-        
+
         # Split the text into sentences and find symptom matches
         sentences = _split_sentences(normalized)
+        sentence_clauses = [_split_clauses(sentence) for sentence, _, _ in sentences]
         matches = self._find_symptom_matches(normalized)
 
-        # Store symptom mentions together with their sentence index
-        mention_records: list[tuple[SymptomMention, int]] = []
+        # Store symptom mentions together with their sentence and clause index
+        mention_records: list[tuple[SymptomMention, tuple[int, int]]] = []
         for match in matches:
             # Locate the sentence containing the symptom match
             sentence_index, sentence, sentence_start = _locate_sentence(
                 match.start, sentences
             )
+            clause_index, clause, clause_start = _locate_clause(
+                match.start - sentence_start,
+                sentence_clauses[sentence_index],
+            )
 
             # Calculate the position of the match relative to the start of the sentence
             relative_start = match.start - sentence_start
             relative_end = match.end - sentence_start
-            
+            clause_relative_start = relative_start - clause_start
+
             # Extract attributes and create a SymptomMention object
             mention = SymptomMention(
                 symptom=match.canonical,
@@ -109,10 +137,10 @@ class ClinicalTextParser:
                     relative_end,
                     default_location=match.default_body_location,
                 ),
-                negated=self._is_negated(sentence, relative_start),
+                negated=self._is_negated(clause, clause_relative_start),
                 evidence=sentence.strip(),
             )
-            mention_records.append((mention, sentence_index))
+            mention_records.append((mention, (sentence_index, clause_index)))
 
         self._attach_associations(mention_records)
 
@@ -152,16 +180,15 @@ class ClinicalTextParser:
         before_window = sentence[max(0, start - 24) : start]
         after_window = sentence[end : min(len(sentence), end + 24)]
 
-        for window, use_last in ((before_window, True), (after_window, False)):
-            matches = list(SEVERITY_REGEX.finditer(window))
-            if not matches:
-                continue
+        leading_match = LEADING_SEVERITY_REGEX.search(before_window)
+        if leading_match:
+            return SEVERITY_NORMALIZATION[leading_match.group("term").lower()]
 
-            # Use the closest severity match to the symptom mention
-            match = matches[-1] if use_last else matches[0]
-            return SEVERITY_NORMALIZATION[match.group(1).lower()]
+        trailing_match = TRAILING_SEVERITY_REGEX.search(after_window)
+        if trailing_match:
+            return SEVERITY_NORMALIZATION[trailing_match.group("term").lower()]
         return None
-    
+
     # Extract duration information near a symptom mention
     def _extract_duration(self, sentence: str, start: int, end: int) -> str | None:
         trailing_window = sentence[end : min(len(sentence), end + 40)]
@@ -197,10 +224,10 @@ class ClinicalTextParser:
             if pattern.search(context_window):
                 return location
         return None
-    
+
     # Determine if a symptom mention is negated
-    def _is_negated(self, sentence: str, start: int) -> bool:
-        left_context = sentence[max(0, start - NEGATION_LOOKBACK_CHARS) : start]
+    def _is_negated(self, clause: str, start: int) -> bool:
+        left_context = clause[max(0, start - NEGATION_LOOKBACK_CHARS) : start]
         cue_matches = list(NEGATION_REGEX.finditer(left_context))
 
         if not cue_matches:
@@ -212,29 +239,33 @@ class ClinicalTextParser:
         if CONTRAST_REGEX.search(tail_after_last_cue):
             return False
 
+        if AFFIRMATIVE_CLAUSE_BOUNDARY_REGEX.search(tail_after_last_cue):
+            return False
+
         return True
 
     # Attach associated symptoms that appear in the same sentence
     def _attach_associations(
         self,
-        mention_records: list[tuple[SymptomMention, int]],
+        mention_records: list[tuple[SymptomMention, tuple[int, int]]],
     ) -> None:
-        grouped_mentions: dict[int, list[SymptomMention]] = defaultdict(list)
-        for mention, sentence_index in mention_records:
-            grouped_mentions[sentence_index].append(mention)
+        grouped_mentions: dict[tuple[int, int], list[SymptomMention]] = defaultdict(
+            list
+        )
+        for mention, group_key in mention_records:
+            grouped_mentions[group_key].append(mention)
 
         for mentions in grouped_mentions.values():
-            symptoms_in_sentence = [mention.symptom for mention in mentions]
-            unique_symptoms = set(symptoms_in_sentence)
+            unique_symptoms = _ordered_unique(mention.symptom for mention in mentions)
 
             if len(unique_symptoms) < 2:
                 continue
             for mention in mentions:
                 other_symptoms = [
-                    symptom for symptom in unique_symptoms
-                    if symptom != mention.symptom
+                    symptom for symptom in unique_symptoms if symptom != mention.symptom
                 ]
                 mention.associated_symptoms = other_symptoms
+
 
 # Public function to parse clinical text using the ClinicalTextParser class
 def parse_clinical_text(text: str) -> ParsedClinicalText:
@@ -258,6 +289,24 @@ def _split_sentences(text: str) -> list[tuple[str, int, int]]:
 
     return sentences or [(text, 0, len(text))]
 
+
+def _split_clauses(sentence: str) -> list[tuple[str, int, int]]:
+    clauses: list[tuple[str, int, int]] = []
+    start = 0
+
+    for match in CLAUSE_BOUNDARY_REGEX.finditer(sentence):
+        chunk_start, chunk_end = _trim_chunk(sentence, start, match.start())
+        if chunk_start < chunk_end:
+            clauses.append((sentence[chunk_start:chunk_end], chunk_start, chunk_end))
+        start = match.start()
+
+    chunk_start, chunk_end = _trim_chunk(sentence, start, len(sentence))
+    if chunk_start < chunk_end:
+        clauses.append((sentence[chunk_start:chunk_end], chunk_start, chunk_end))
+
+    return clauses or [(sentence, 0, len(sentence))]
+
+
 # Trim leading and trailing spaces and commas from a text chunk
 def _trim_chunk(text: str, start: int, end: int) -> tuple[int, int]:
     while start < end and text[start] in {" ", ","}:
@@ -265,6 +314,7 @@ def _trim_chunk(text: str, start: int, end: int) -> tuple[int, int]:
     while end > start and text[end - 1] in {" ", ","}:
         end -= 1
     return start, end
+
 
 # Locate the sentence containing a given character span
 def _locate_sentence(
@@ -278,6 +328,27 @@ def _locate_sentence(
     last_sentence, last_start, _ = sentences[last_index]
     return last_index, last_sentence, last_start
 
+
+def _locate_clause(
+    span_start: int,
+    clauses: list[tuple[str, int, int]],
+) -> tuple[int, str, int]:
+    for index, (clause, clause_start, clause_end) in enumerate(clauses):
+        if clause_start <= span_start < clause_end:
+            return index, clause, clause_start
+    last_index = len(clauses) - 1
+    last_clause, last_start, _ = clauses[last_index]
+    return last_index, last_clause, last_start
+
+
 # Check if two symptom matches overlap in their character spans
 def _overlaps(left: _MatchedSymptom, right: _MatchedSymptom) -> bool:
     return left.start < right.end and right.start < left.end
+
+
+def _ordered_unique(items: Iterable[str]) -> list[str]:
+    unique_items: list[str] = []
+    for item in items:
+        if item not in unique_items:
+            unique_items.append(item)
+    return unique_items
