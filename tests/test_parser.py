@@ -36,6 +36,23 @@ def test_extracts_multiple_symptoms_in_one_sentence() -> None:
     assert result.mentions[1].associated_symptoms == ["fever"]
 
 
+def test_associations_are_scoped_to_the_same_clause() -> None:
+    result = parse_clinical_text(
+        "Patient denies fever, cough, and headache but reports nausea."
+    )
+    fever = next(mention for mention in result.mentions if mention.symptom == "fever")
+    cough = next(mention for mention in result.mentions if mention.symptom == "cough")
+    headache = next(
+        mention for mention in result.mentions if mention.symptom == "headache"
+    )
+    nausea = next(mention for mention in result.mentions if mention.symptom == "nausea")
+
+    assert fever.associated_symptoms == ["cough", "headache"]
+    assert cough.associated_symptoms == ["fever", "headache"]
+    assert headache.associated_symptoms == ["fever", "cough"]
+    assert nausea.associated_symptoms == []
+
+
 def test_detects_negated_symptoms() -> None:
     result = parse_clinical_text("Patient denies fever or cough.")
 
@@ -60,6 +77,15 @@ def test_handles_case_and_spelling_variation() -> None:
     assert headache.body_location == "head"
 
 
+def test_severity_does_not_bleed_into_neighboring_symptom() -> None:
+    result = parse_clinical_text("Patient has severe cough and fever.")
+    cough = next(mention for mention in result.mentions if mention.symptom == "cough")
+    fever = next(mention for mention in result.mentions if mention.symptom == "fever")
+
+    assert cough.severity == "severe"
+    assert fever.severity is None
+
+
 def test_empty_input_returns_no_mentions() -> None:
     parser = ClinicalTextParser()
     result = parser.parse("   ")
@@ -82,6 +108,26 @@ def test_negation_with_contrast_scope() -> None:
 
     assert fever.negated is True
     assert cough.negated is False
+
+
+def test_negation_stops_at_affirmative_clause_boundary() -> None:
+    result = parse_clinical_text("Patient denies fever and has cough.")
+    fever = next(mention for mention in result.mentions if mention.symptom == "fever")
+    cough = next(mention for mention in result.mentions if mention.symptom == "cough")
+
+    assert fever.negated is True
+    assert cough.negated is False
+
+
+def test_negation_stops_before_reported_positive_clause() -> None:
+    result = parse_clinical_text("Patient denies fever and reports cough with nausea.")
+    fever = next(mention for mention in result.mentions if mention.symptom == "fever")
+    cough = next(mention for mention in result.mentions if mention.symptom == "cough")
+    nausea = next(mention for mention in result.mentions if mention.symptom == "nausea")
+
+    assert fever.negated is True
+    assert cough.negated is False
+    assert nausea.negated is False
 
 
 def test_extracts_leading_duration_history_pattern() -> None:
