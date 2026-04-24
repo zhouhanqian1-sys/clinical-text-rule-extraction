@@ -6,7 +6,11 @@ from clinical_text_parser.patterns.duration import (
     TRAILING_DURATION_PATTERNS,
     normalize_duration,
 )
-from clinical_text_parser.patterns.negation import NEGATION_CUES
+from clinical_text_parser.patterns.negation import (
+    CONTRAST_CUES,
+    NEGATION_CUES,
+    NEGATION_LOOKBACK_CHARS,
+)
 from clinical_text_parser.patterns.severity import SEVERITY_NORMALIZATION
 from clinical_text_parser.patterns.symptoms import SYMPTOM_PATTERNS, SymptomPattern
 
@@ -14,6 +18,8 @@ __all__ = [
     "BODY_LOCATION_PATTERNS",
     "LEADING_DURATION_PATTERNS",
     "NEGATION_CUES",
+    "CONTRAST_CUES",
+    "NEGATION_LOOKBACK_CHARS",
     "SEVERITY_NORMALIZATION",
     "SYMPTOM_PATTERNS",
     "SymptomPattern",

@@ -1,0 +1,50 @@
+[
+  {
+    "text": "Patient has cough.",
+    "normalized_text": "patient has cough.",
+    "mentions": [
+      {
+        "symptom": "cough",
+        "matched_text": "cough",
+        "severity": null,
+        "duration": null,
+        "body_location": null,
+        "negated": false,
+        "associated_symptoms": [],
+        "evidence": "patient has cough"
+      }
+    ]
+  },
+  {
+    "text": "Patient denies fever.",
+    "normalized_text": "patient denies fever.",
+    "mentions": [
+      {
+        "symptom": "fever",
+        "matched_text": "fever",
+        "severity": null,
+        "duration": null,
+        "body_location": null,
+        "negated": true,
+        "associated_symptoms": [],
+        "evidence": "patient denies fever"
+      }
+    ]
+  },
+  {
+    "text": "Patient is without chest pain.",
+    "normalized_text": "patient is without chest pain.",
+    "mentions": [
+      {
+        "symptom": "chest pain",
+        "matched_text": "chest pain",
+        "severity": null,
+        "duration": null,
+        "body_location": "chest",
+        "negated": true,
+        "associated_symptoms": [],
+        "evidence": "patient is without chest pain"
+      }
+    ]
+  }
+]

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from clinical_text_parser import ClinicalTextParser, parse_clinical_text
+from clinical_text_parser.parser import ClinicalTextParser, parse_clinical_text
 
 
 def test_extracts_symptom_severity_duration_and_association() -> None:
@@ -10,9 +10,13 @@ def test_extracts_symptom_severity_duration_and_association() -> None:
         "Patient has had severe chest pain for 2 days with shortness of breath."
     )
 
-    chest_pain = next(mention for mention in result.mentions if mention.symptom == "chest pain")
+    chest_pain = next(
+        mention for mention in result.mentions if mention.symptom == "chest pain"
+    )
     shortness_of_breath = next(
-        mention for mention in result.mentions if mention.symptom == "shortness of breath"
+        mention
+        for mention in result.mentions
+        if mention.symptom == "shortness of breath"
     )
 
     assert chest_pain.severity == "severe"
@@ -43,9 +47,13 @@ def test_handles_case_and_spelling_variation() -> None:
     result = parse_clinical_text("SEVERE shortness-of-breath x 2 DAYS and head ache.")
 
     shortness_of_breath = next(
-        mention for mention in result.mentions if mention.symptom == "shortness of breath"
+        mention
+        for mention in result.mentions
+        if mention.symptom == "shortness of breath"
     )
-    headache = next(mention for mention in result.mentions if mention.symptom == "headache")
+    headache = next(
+        mention for mention in result.mentions if mention.symptom == "headache"
+    )
 
     assert shortness_of_breath.severity == "severe"
     assert shortness_of_breath.duration == "2 days"
@@ -65,3 +73,75 @@ def test_non_string_input_raises_type_error() -> None:
 
     with pytest.raises(TypeError):
         parser.parse(None)  # type: ignore[arg-type]
+
+
+def test_negation_with_contrast_scope() -> None:
+    result = parse_clinical_text("Patient denies fever but has cough.")
+    fever = next(mention for mention in result.mentions if mention.symptom == "fever")
+    cough = next(mention for mention in result.mentions if mention.symptom == "cough")
+
+    assert fever.negated is True
+    assert cough.negated is False
+
+
+def test_extracts_leading_duration_history_pattern() -> None:
+    result = parse_clinical_text("Patient has 1-week history of cough.")
+    cough = next(mention for mention in result.mentions if mention.symptom == "cough")
+
+    assert cough.duration == "1 week"
+
+
+def test_extracts_synonym_mentions() -> None:
+    result = parse_clinical_text("Dyspnea with emesis and lightheadedness.")
+    symptoms = [mention.symptom for mention in result.mentions]
+
+    assert symptoms == ["shortness of breath", "vomiting", "dizziness"]
+
+
+def test_detects_no_negation() -> None:
+    result = parse_clinical_text("Patient has no cough.")
+    cough = next(mention for mention in result.mentions if mention.symptom == "cough")
+
+    assert cough.negated is True
+
+
+def test_detects_without_negation() -> None:
+    result = parse_clinical_text("Patient is without chest pain.")
+    chest_pain = next(
+        mention for mention in result.mentions if mention.symptom == "chest pain"
+    )
+
+    assert chest_pain.negated is True
+
+
+def test_detects_negative_for_negation() -> None:
+    result = parse_clinical_text("Patient is negative for fever.")
+    fever = next(mention for mention in result.mentions if mention.symptom == "fever")
+
+    assert fever.negated is True
+
+
+def test_detects_free_of_negation() -> None:
+    result = parse_clinical_text("Patient is free of shortness of breath.")
+    shortness_of_breath = next(
+        mention
+        for mention in result.mentions
+        if mention.symptom == "shortness of breath"
+    )
+
+    assert shortness_of_breath.negated is True
+
+
+def test_non_negated_symptom_remains_false() -> None:
+    result = parse_clinical_text("Patient reports fever and cough.")
+
+    assert all(mention.negated is False for mention in result.mentions)
+
+
+def test_detects_denied_negation() -> None:
+    result = parse_clinical_text("Patient denied headache yesterday.")
+    headache = next(
+        mention for mention in result.mentions if mention.symptom == "headache"
+    )
+
+    assert headache.negated is True
