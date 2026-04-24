@@ -12,16 +12,16 @@ from clinical_text_parser.parser import ClinicalTextParser
 def build_parser() -> argparse.ArgumentParser:
     """Build the argument parser for the CLI."""
     parser = argparse.ArgumentParser(
-        prog ="clinical-text-parser",
+        prog="clinical-text-parser",
         description="Extract structured symptom information from short clinical text.",
     )
     source_group = parser.add_mutually_exclusive_group(required=True)
 
     source_group.add_argument(
-        "--text", 
+        "--text",
         help="Clinical text snippet to parse.",
     )
-    
+
     source_group.add_argument(
         "--input-file",
         type=Path,

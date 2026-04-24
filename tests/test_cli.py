@@ -15,6 +15,7 @@ def test_cli_text_output(capsys) -> None:
     assert output["mentions"][0]["symptom"] == "cough"
     assert output["mentions"][0]["negated"] is False
 
+
 # Test parsing clinical text from an input file and writing results to an output file
 def test_cli_file_output(tmp_path) -> None:
     input_file = tmp_path / "notes.txt"
@@ -40,6 +41,7 @@ def test_cli_file_output(tmp_path) -> None:
     assert result[0]["mentions"][0]["symptom"] == "cough"
     assert result[1]["mentions"][0]["symptom"] == "fever"
     assert result[1]["mentions"][0]["negated"] is True
+
 
 # Test that blank lines in the input file are skipped and do not affect results
 def test_cli_skips_blank_lines_in_input_file(tmp_path) -> None:

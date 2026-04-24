@@ -15,4 +15,12 @@ CONTRAST_CUES: tuple[str, ...] = (
     "except",
 )
 
+AFFIRMATIVE_CLAUSE_BOUNDARY_PATTERNS: tuple[str, ...] = (
+    r"\b(?:and|,)\s+(?:has|have|had)\b",
+    r"\b(?:and|,)\s+(?:report|reports|reported)\b",
+    r"\b(?:and|,)\s+(?:note|notes|noted)\b",
+    r"\b(?:and|,)\s+(?:present|presents|presented)\b",
+    r"\b(?:and|,)\s+(?:complain|complains|complained)\b",
+)
+
 NEGATION_LOOKBACK_CHARS = 45

@@ -55,6 +55,7 @@ def test_parsed_clinical_text_to_dict() -> None:
         ],
     }
 
+
 def test_parsed_clinical_text_empty_mentions() -> None:
     result = ParsedClinicalText(
         text="",
