@@ -71,24 +71,40 @@ This architecture was chosen to support:
 ## Project Structure
 
 ```text
-clinical-text-rule-extraction/
+clinical-text-rule-extraction-main/
 ├── clinical_text_parser/
 │   ├── __init__.py
-│   ├── cli/
-│   │   └── __init__.py
-│   ├── io/
-│   │   └── __init__.py
-│   ├── models/
-│   │   └── __init__.py
-│   ├── parser/
-│   │   └── __init__.py
-│   └── patterns/
-│       └── __init__.py
-├── tests/
-│   └── __init__.py
-├── pyproject.toml
-├── README.md
-└── AI_USAGE.md
+│   ├── cli/           # Command-line interface
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   └── main.py
+│   ├── io/            # Input and output helpers
+│   │   ├── __init__.py
+│   │   └── json_io.py
+│   ├── models/        # Structured result models
+│   │   ├── __init__.py
+│   │   └── extraction.py
+│   ├── parser/        # Core rule-based parsing logic
+│   │   ├── __init__.py
+│   │   ├── core.py
+│   │   └── normalizer.py
+│   └── patterns/      # Symptom and attribute rule patterns
+│       ├── __init__.py
+│       ├── body_locations.py
+│       ├── duration.py
+│       ├── negation.py
+│       ├── severity.py
+│       └── symptoms.py
+├── tests/            # Automated tests
+│   ├── test_cli.py
+│   ├── test_models.py
+│   └── test_parser.py
+├── AI_USAGE.md        # Documentation of AI tool usage
+├── LICENSE            # Project license
+├── pyproject.toml     # Project configuration
+├── README.md          # Project documentation
+├── results.json       # Example output file
+└── sample_notes.txt   # Example input file
 ```
 
 This structure keeps the parsing logic independent from the CLI and separates rules, models, and I/O utilities into modular components that are easier to test and extend.
