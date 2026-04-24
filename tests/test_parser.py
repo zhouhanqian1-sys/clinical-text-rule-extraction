@@ -96,3 +96,55 @@ def test_extracts_synonym_mentions() -> None:
     symptoms = [mention.symptom for mention in result.mentions]
 
     assert symptoms == ["shortness of breath", "vomiting", "dizziness"]
+<<<<<<< HEAD
+=======
+
+
+def test_detects_no_negation() -> None:
+    result = parse_clinical_text("Patient has no cough.")
+    cough = next(mention for mention in result.mentions if mention.symptom == "cough")
+
+    assert cough.negated is True
+
+
+def test_detects_without_negation() -> None:
+    result = parse_clinical_text("Patient is without chest pain.")
+    chest_pain = next(
+        mention for mention in result.mentions if mention.symptom == "chest pain"
+    )
+
+    assert chest_pain.negated is True
+
+
+def test_detects_negative_for_negation() -> None:
+    result = parse_clinical_text("Patient is negative for fever.")
+    fever = next(mention for mention in result.mentions if mention.symptom == "fever")
+
+    assert fever.negated is True
+
+
+def test_detects_free_of_negation() -> None:
+    result = parse_clinical_text("Patient is free of shortness of breath.")
+    shortness_of_breath = next(
+        mention
+        for mention in result.mentions
+        if mention.symptom == "shortness of breath"
+    )
+
+    assert shortness_of_breath.negated is True
+
+
+def test_non_negated_symptom_remains_false() -> None:
+    result = parse_clinical_text("Patient reports fever and cough.")
+
+    assert all(mention.negated is False for mention in result.mentions)
+
+
+def test_detects_denied_negation() -> None:
+    result = parse_clinical_text("Patient denied headache yesterday.")
+    headache = next(
+        mention for mention in result.mentions if mention.symptom == "headache"
+    )
+
+    assert headache.negated is True
+>>>>>>> bfef609 (Issur 5-7)

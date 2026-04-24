@@ -1,0 +1,3 @@
+Patient has cough.
+Patient denies fever.
+Patient is without chest pain.
